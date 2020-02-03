@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+    <link href="https://cdn.bootcss.com/twitter-bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcss.com/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <h2 class="text-center">注册页面</h2>
+        <div class="col-md-8 col-md-offset-2">
+            <form id="myform">
+                {% csrf_token %}
+
+                {% for form in form_obj %}
+                    <div class="form-group">
+                        <label for="{{ form.id_for_label }}">{{ form.label }}</label>
+                        {{ form }}
+                        <span style="color: red" class="pull-right"></span>
+                    </div>
+                {% endfor %}
+
+                <div class="form-group">
+                    <label for="id_avatar">头像
+                        <img src="/static/img/头像1.jpg" alt="" width="200" style="margin-left: 10px" id="id_img">
+                    </label>
+                    <input type="file" name="myfile" id="id_avatar" style="display: none">
+                </div>
+                <input type="button" value="注册" class="btn btn-primary pull-right" id="id_submit">
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    $('#id_avatar').change(function () {
+        // 1 先获取用户上传的头像文件
+        var avatarFile = $(this)[0].files[0];
+        // 2 利用文件阅读器对象
+        var myFileReader = new FileReader();
+        // 3 将文件交由阅读器对象读取
+        myFileReader.readAsDataURL(avatarFile);
+        // 4 修改img标签的src属性  等待文件阅读器对象读取文件之后再操作img标签
+        myFileReader.onload = function(){
+            $('#id_img').attr('src',myFileReader.result)
+        }
+
+    });
+
+    // 点击按钮触发ajax提交动作
+    $('#id_submit').on('click',function () {
+        // 1 先生成一个内置对象 FormData
+        var myFormData = new FormData();
+        // 2 添加普通键值对
+        {#console.log($('#myform').serializeArray())#}
+        // 循环myform里的每一个对象
+        $.each($('#myform').serializeArray(),function (index,obj) {
+            myFormData.append(obj.name,obj.value)
+        });
+        // 3 添加文件数据
+        myFormData.append('avatar',$('#id_avatar')[0].files[0]);
+        // 4 发送数据
+        $.ajax({
+            url:'',
+            type:'post',
+            data:myFormData,
+            // 两个关键性参数
+            contentType:false,
+            processData:false,
+
+            success:function (data) {
+                if (data.code===1000){
+                    // 注册成功之后 应该跳转到后端返回过来的url
+                    location.href = data.url
+                }else{
+                    $.each(data.msg,function(index,obj){
+                        // 1 先手动拼接字段名所对应的input框的id值
+                        var targetId = '#id_' + index;  // #id_username
+                        // 2 利用id选择器查找标签  并且将div标签添加报错类
+                        $(targetId).next().text(obj[0]).parent().addClass('has-error')
+                    })
+                }
+            }
+        })
+    });
+    $('input').focus(function () {
+        // 移除span标签内部的文本  还需要移除div标签的class中has-error属性
+        $(this).next().text('').parent().removeClass('has-error')
+    })
+</script>
+</body>
+</html>

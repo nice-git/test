@@ -1,0 +1,37 @@
+{% extends 'backend/backend_base.html' %}
+
+{% block article %}
+
+    <p>原头像
+        <img src="/media/{{ request.user.avatar }}/" alt="">
+    </p>
+
+    <form action="" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="form-group">
+                    <label for="id_avatar">头像
+                        <img src="/static/img/头像1.jpg" alt="" width="200" style="margin-left: 10px" id="id_img">
+                    </label>
+                    <input type="file" name="myfile" id="id_avatar" style="display: none">
+                </div>
+                <input type="submit" value="提交" class="btn btn-primary pull-right" id="id_submit">
+
+    </form>
+
+
+    <script>
+    $('#id_avatar').change(function () {
+        // 1 先获取用户上传的头像文件
+        var avatarFile = $(this)[0].files[0];
+        // 2 利用文件阅读器对象
+        var myFileReader = new FileReader();
+        // 3 将文件交由阅读器对象读取
+        myFileReader.readAsDataURL(avatarFile);
+        // 4 修改img标签的src属性  等待文件阅读器对象读取文件之后再操作img标签
+        myFileReader.onload = function(){
+            $('#id_img').attr('src',myFileReader.result)
+        }
+
+    });
+    </script>
+{% endblock %}
